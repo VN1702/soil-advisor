@@ -3,58 +3,111 @@ import google.generativeai as genai
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
+from models import db, RecommendationHistory
+from soil_analysis import image_processor, pdf_processor, location_fetcher
 
-# Load environment variables from the .env file
+# Load .env
 load_dotenv()
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Initialize the Flask app and enable CORS for all routes
+# Configs
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+MYSQL_USER = os.getenv("MYSQL_USER")
+MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
+MYSQL_HOST = os.getenv("MYSQL_HOST")
+MYSQL_DB = os.getenv("MYSQL_DB")
+
 app = Flask(__name__)
 CORS(app)
 
-# Configure the Gemini API with your key
+# Gemini API config
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-pro')
 
-# A helper function to create a personalized prompt for the AI
-def generate_prompt(crop, soil):
-    """
-    Crafts a detailed prompt for Gemini based on user inputs.
-    """
+# MySQL DB config
+app.config['SQLALCHEMY_DATABASE_URI'] = (
+    f'mysql+mysqlconnector://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}/{MYSQL_DB}'
+)
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db.init_app(app)
+with app.app_context():
+    db.create_all()
+
+# Prompt generator
+def generate_detailed_prompt(crop, soil_info, language):
+    lang_intro = {
+        'en': "You are an expert agricultural advisor for Indian farmers.",
+        'hi': "आप भारतीय किसानों के लिए एक कृषि विशेषज्ञ सलाहकार हैं।",
+        'kn': "ನೀವು ಭಾರತೀಯ ರೈತರಿಗೆ ಕೃಷಿ ತಜ್ಞ ಸಲಹೆಗಾರರಾಗಿದ್ದೀರಿ।"
+    }
+    intro_text = lang_intro.get(language, lang_intro['en'])
+
     return (
-        f"You are a helpful agricultural expert for Indian farmers. "
-        f"Provide a simple, three-part advisory for a farmer growing {crop} "
-        f"in a soil condition of '{soil}'. Use simple language. "
-        f"Section 1: **Soil Health** (explain the issue and a simple fix). "
-        f"Section 2: **Fertilizer Guidance** (recommend a specific fertilizer like Urea or DAP and the amount in kg/acre). "
-        f"Section 3: **General Tip** (a simple tip about farming practice or pests). "
-        f"Format your response with the bolded headings. Do not add extra text."
+        f"{intro_text}\n"
+        f"The farmer wants to grow {crop}. Soil analysis info:\n"
+        f"{soil_info}\n\n"
+        f"Provide:\n"
+        f"1. Chemical fertilizer recommendations.\n"
+        f"2. Pretreatment steps.\n"
+        f"3. Local organic solutions.\n"
+        f"Use simple language."
     )
 
-# The main API endpoint that the frontend will call
+# Get Recommendation API
 @app.route('/get-recommendation', methods=['POST'])
 def get_recommendation():
-    """
-    Handles POST requests from the React frontend, gets a recommendation from Gemini, and sends it back.
-    """
-    data = request.json
+    data = request.form
     crop = data.get('crop')
-    soil = data.get('soil')
+    location = data.get('location')
+    language = data.get('language', 'en')
+    image_file = request.files.get('soil_image')
+    pdf_file = request.files.get('soil_pdf')
 
-    # Basic input validation
-    if not all([crop, soil]):
-        return jsonify({'error': 'Missing crop or soil information.'}), 400
+    soil_info = None
 
-    # Generate the prompt and get a response from Gemini
-    prompt = generate_prompt(crop, soil)
+    if image_file:
+        soil_info = image_processor.process(image_file)
+    elif pdf_file:
+        soil_info = pdf_processor.extract(pdf_file)
+    elif location:
+        soil_info = location_fetcher.fetch(location)
+    else:
+        return jsonify({'error': 'No soil input provided.'}), 400
+
+    prompt = generate_detailed_prompt(crop, soil_info, language)
+
     try:
         response = model.generate_content(prompt)
         recommendation_text = response.text
+
+        history_entry = RecommendationHistory(
+            crop=crop,
+            soil_info=soil_info,
+            recommendation=recommendation_text,
+            language=language
+        )
+        db.session.add(history_entry)
+        db.session.commit()
+
         return jsonify({'recommendation': recommendation_text})
     except Exception as e:
-        # Return an error if the Gemini API call fails
         return jsonify({'error': f'An error occurred: {str(e)}'}), 500
 
-# Run the Flask app on port 5000
+# History API
+@app.route('/history', methods=['GET'])
+def get_history():
+    records = RecommendationHistory.query.order_by(RecommendationHistory.timestamp.desc()).all()
+    history = [{
+        'id': r.id,
+        'crop': r.crop,
+        'soil_info': r.soil_info,
+        'recommendation': r.recommendation,
+        'language': r.language,
+        'timestamp': r.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+    } for r in records]
+
+    return jsonify({'history': history})
+
+# Run app
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
