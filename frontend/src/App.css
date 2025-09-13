@@ -1,0 +1,137 @@
+
+        /* General Body Styles */
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          background-color: #f4f7f6;
+          margin: 0;
+          padding: 20px;
+          display: flex;
+          justify-content: center;
+          align-items: flex-start; /* Align content to the top */
+          min-height: 100vh;
+        }
+
+        /* Container for the whole app */
+        .container {
+          background-color: #ffffff;
+          padding: 30px;
+          border-radius: 10px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+          max-width: 700px;
+          width: 100%;
+        }
+
+        /* Heading */
+        h1 {
+          color: #2c3e50;
+          text-align: center;
+          margin-bottom: 30px;
+        }
+
+        /* Form Styles */
+        .advisor-form {
+          margin-bottom: 30px;
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+
+        .form-group {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .advisor-form label {
+          margin-bottom: 8px;
+          font-weight: bold;
+          color: #555;
+        }
+
+        .advisor-form select {
+          padding: 10px 12px;
+          border: 1px solid #ddd;
+          border-radius: 5px;
+          font-size: 1rem;
+          background-color: #fcfcfc;
+          -webkit-appearance: none; /* Remove default dropdown arrow on WebKit browsers */
+          -moz-appearance: none;    /* Remove default dropdown arrow on Firefox */
+          appearance: none;         /* Remove default dropdown arrow */
+          background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007bff%22%20d%3D%22M287%20164.7c-2.9-2.9-7.7-2.9-10.6%200L146.2%20293.4l-129.2-129.2c-2.9-2.9-7.7-2.9-10.6%200-2.9%202.9-2.9%207.7%200%2010.6l134.7%20134.7c1.5%201.5%203.4%202.2%205.3%202.2%201.9%200%203.8-.7%205.3-2.2l134.7-134.7c2.9-2.9%202.9-7.7%200-10.6z%22%2F%3E%3Cpath%20fill%3D%22%23007bff%22%20d%3D%22M5.4%20127.3c2.9%202.9%207.7%202.9%2010.6%200l129.2-129.2L276.8%20127.3c2.9%202.9%207.7%202.9%2010.6%200%202.9-2.9%202.9-7.7%200-10.6L146.2%20-1.8c-1.5-1.5-3.4-2.2-5.3-2.2-1.9%200-3.8.7-5.3%202.2L5.4%20116.7c-2.9%202.9-2.9%207.7%200%2010.6z%22%2F%3E%3C%2Fsvg%3E');
+          background-repeat: no-repeat;
+          background-position: right 12px center;
+          background-size: 12px;
+        }
+
+
+        /* Submit Button */
+        .submit-button {
+          padding: 12px 20px;
+          background-color: #28a745; /* Green button */
+          color: white;
+          border: none;
+          border-radius: 5px;
+          font-size: 1.1rem;
+          font-weight: bold;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+        }
+
+        .submit-button:hover:not(:disabled) {
+          background-color: #218838; /* Darker green on hover */
+        }
+
+        .submit-button:disabled {
+          background-color: #cccccc; /* Grey when disabled */
+          cursor: not-allowed;
+        }
+
+        /* Recommendation Output Area */
+        .recommendation-output {
+          margin-top: 30px;
+          padding: 20px;
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          background-color: #fdfdfd;
+          min-height: 100px; /* Ensure it has some height even if empty */
+        }
+
+        .recommendation-output h3 {
+          color: #007bff;
+          margin-top: 0;
+          margin-bottom: 15px;
+          text-align: center;
+        }
+
+        .recommendation-output pre {
+          white-space: pre-wrap; /* Preserve formatting and wrap text */
+          word-wrap: break-word; /* Break long words if necessary */
+          font-family: 'Consolas', 'Monaco', monospace; /* Monospace font for clarity */
+          font-size: 0.95rem;
+          background-color: #f8f8f8;
+          padding: 15px;
+          border-radius: 5px;
+          border: 1px dashed #e9ecef;
+        }
+
+        /* Messages (Loading, Error) */
+        .loading-message {
+          color: #007bff;
+          text-align: center;
+          font-style: italic;
+        }
+
+        .error-message {
+          color: #dc3545; /* Red for errors */
+          text-align: center;
+          font-weight: bold;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+          .container {
+            padding: 20px 15px;
+          }
+        }
+      
