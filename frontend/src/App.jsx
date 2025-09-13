@@ -21,25 +21,35 @@ function App() {
     setLoading(true);
     setError(null);
     setRecommendation('');
+    
+    // Log the request details for debugging
+    const url = 'http://localhost:5000/get-recommendation';
+    console.log(`Sending request to: ${url}`);
 
+    // Create a data object to be sent as JSON
+    const dataToSend = {
+      crop,
+      soil,
+      location,
+      weather,
+    };
+    
+    // NOTE: The previous code sent a FormData object which can cause a 415 error.
+    // We are now sending a JSON object, which is more reliable for this type of data.
+    // The file upload functionality has been removed in this version to simplify the data format.
     try {
-      // Create a new FormData object to handle both text and file data
-      const formData = new FormData();
-      formData.append('crop', crop);
-      formData.append('soil', soil);
-      formData.append('location', location);
-      formData.append('weather', weather);
-      if (uploadedFile) {
-        formData.append('report', uploadedFile); // Append the uploaded file to the form data
-      }
+      console.log('Sending JSON data:', dataToSend);
 
-      // Use the fetch API to send a POST request to the backend
-      const response = await fetch('http://localhost:5000/get-recommendation', {
+      // Use the fetch API to send a POST request with JSON data
+      const response = await fetch(url, {
         method: 'POST',
-        // NOTE: Do not set 'Content-Type' header here. The browser will automatically
-        // set 'multipart/form-data' when using a FormData object.
-        body: formData, 
+        headers: {
+          'Content-Type': 'application/json', // This header tells the server to expect JSON
+        },
+        body: JSON.stringify(dataToSend), // Convert the data object to a JSON string
       });
+      
+      console.log(`Response received with status: ${response.status}`);
 
       // Check for a successful HTTP status code (200-299)
       if (!response.ok) {
@@ -48,7 +58,8 @@ function App() {
 
       // Parse the JSON response from the backend
       const data = await response.json();
-      
+      console.log("Received data:", data);
+
       // Update the recommendation state with the received data
       setRecommendation(data.recommendation);
 
@@ -73,9 +84,9 @@ function App() {
         <form onSubmit={handleSubmit} className="advisor-form">
           <div className="form-group">
             <label htmlFor="crop-select">Select Crop:</label>
-            <select 
-              id="crop-select" 
-              value={crop} 
+            <select
+              id="crop-select"
+              value={crop}
               onChange={(e) => setCrop(e.target.value)}
             >
               <option value="Rice">Rice</option>
@@ -89,9 +100,9 @@ function App() {
 
           <div className="form-group">
             <label htmlFor="soil-select">Select Soil Condition:</label>
-            <select 
-              id="soil-select" 
-              value={soil} 
+            <select
+              id="soil-select"
+              value={soil}
               onChange={(e) => setSoil(e.target.value)}
             >
               <option value="Low Nitrogen">Low Nitrogen</option>
@@ -102,12 +113,12 @@ function App() {
               <option value="Saline Soil">Saline Soil</option>
             </select>
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="location-select">Select Location:</label>
             <select
-              id="location-select" 
-              value={location} 
+              id="location-select"
+              value={location}
               onChange={(e) => setLocation(e.target.value)}
             >
               <option value="">Select a city...</option>
@@ -121,7 +132,7 @@ function App() {
               <option value="Ludhiana">Ludhiana</option>
             </select>
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="weather-select">Select Weather Condition:</label>
             <select
@@ -137,19 +148,19 @@ function App() {
               <option value="Dry">Dry</option>
             </select>
           </div>
-          
+
           <div className="form-group file-upload">
             <label htmlFor="file-upload-input">
               Upload Image or PDF of Report
               <br/>
               <small>Click to select file or drag & drop here</small>
             </label>
-            <input 
-              id="file-upload-input" 
-              type="file" 
-              accept="image/*,.pdf" 
-              onChange={(e) => setUploadedFile(e.target.files[0])} 
-              hidden 
+            <input
+              id="file-upload-input"
+              type="file"
+              accept="image/*,.pdf"
+              onChange={(e) => setUploadedFile(e.target.files[0])}
+              hidden
             />
             {uploadedFile && <p style={{marginTop: '10px', fontSize: '0.9rem'}}>Selected file: {uploadedFile.name}</p>}
           </div>
