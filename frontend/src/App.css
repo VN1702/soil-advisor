@@ -1,5 +1,4 @@
-
-        /* General Body Styles */
+ /* General Body Styles */
         body {
           font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
           line-height: 1.6;
@@ -42,13 +41,26 @@
           display: flex;
           flex-direction: column;
         }
+        
+        .form-group.file-upload {
+          border: 1px dashed #ccc;
+          padding: 15px;
+          border-radius: 8px;
+          text-align: center;
+        }
+
+        .file-upload label {
+          font-weight: normal;
+          cursor: pointer;
+        }
 
         .advisor-form label {
           margin-bottom: 8px;
           font-weight: bold;
           color: #555;
         }
-
+        
+        .advisor-form input[type="text"],
         .advisor-form select {
           padding: 10px 12px;
           border: 1px solid #ddd;
@@ -62,6 +74,10 @@
           background-repeat: no-repeat;
           background-position: right 12px center;
           background-size: 12px;
+        }
+
+        .advisor-form input[type="text"] {
+          background-image: none;
         }
 
 
@@ -134,4 +150,3 @@
             padding: 20px 15px;
           }
         }
-      
